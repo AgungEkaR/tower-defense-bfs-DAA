@@ -5,7 +5,15 @@ from enemy import Enemy
 from tower import Tower
 from ui import draw_grid, draw_header, draw_settings_popup
 
-def run_game(screen, fonts, sounds, images):
+
+def run_game(screen, fonts, sounds, images, algo="bfs"):
+    # Select pathfinding function based on user's algorithm choice
+    if algo == "astar":
+        from astar import astar
+        pathfind = astar
+    else:
+        pathfind = bfs
+
     grid = [[0] * COLS for _ in range(ROWS)]
     grid = generate_obstacles(grid)
 
@@ -28,7 +36,7 @@ def run_game(screen, fonts, sounds, images):
     baby_visible = False
     baby_fade_in = True
 
-    path = bfs(grid, START, END)
+    path = pathfind(grid, START, END)
     btn_settings = pygame.Rect(5, 5, 70, 36)
 
     clock = pygame.time.Clock()
@@ -45,6 +53,9 @@ def run_game(screen, fonts, sounds, images):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p and not show_settings:
                     show_path = not show_path
+                if event.key == pygame.K_r and game_over and not show_settings:
+                    run_game(screen, fonts, sounds, images, algo)
+                    return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = event.pos
@@ -58,7 +69,7 @@ def run_game(screen, fonts, sounds, images):
                     if handle_rect.collidepoint(mx, my):
                         dragging_slider = True
                     if ui["btn_restart"].collidepoint(mx, my):
-                        run_game(screen, fonts, sounds, images)
+                        run_game(screen, fonts, sounds, images, algo)
                         return
                     if ui["btn_quit"].collidepoint(mx, my):
                         pygame.quit()
@@ -82,7 +93,7 @@ def run_game(screen, fonts, sounds, images):
                     if event.button == 1:
                         if grid[row][col] == 0:
                             grid[row][col] = 1
-                            test_path = bfs(grid, START, END)
+                            test_path = pathfind(grid, START, END)
                             if test_path is None:
                                 grid[row][col] = 0
                             else:
@@ -96,7 +107,7 @@ def run_game(screen, fonts, sounds, images):
                             grid[row][col] = 0
                             towers = [t for t in towers
                                      if not (t.row == row and t.col == col)]
-                            path = bfs(grid, START, END)
+                            path = pathfind(grid, START, END)
                             for enemy in enemies:
                                 if enemy.alive and not enemy.reached_end:
                                     enemy.recalculate_path(grid)
@@ -117,9 +128,9 @@ def run_game(screen, fonts, sounds, images):
             spawn_timer += 1
             if spawned < enemies_to_spawn and spawn_timer >= spawn_interval:
                 spawn_timer = 0
-                current_path = bfs(grid, START, END)
+                current_path = pathfind(grid, START, END)
                 if current_path:
-                    e = Enemy(current_path, wave)
+                    e = Enemy(current_path, wave, pathfind_fn=pathfind)
                     enemies.append(e)
                     spawned += 1
 
@@ -163,7 +174,7 @@ def run_game(screen, fonts, sounds, images):
         for enemy in enemies:
             enemy.draw(screen)
         draw_header(screen, score, lives, wave,
-                   enemies_alive, enemies_to_spawn, spawned, fonts)
+                   enemies_alive, enemies_to_spawn, spawned, fonts, algo)
 
         # Settings button
         pygame.draw.rect(screen, (50, 50, 50), btn_settings, border_radius=6)

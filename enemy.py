@@ -1,15 +1,16 @@
 import pygame
 import math
 from settings import *
-from bfs import bfs
+from bfs import bfs as _bfs_default
 
 class Enemy:
-    def __init__(self, path, wave=1):
+    def __init__(self, path, wave=1, pathfind_fn=None):
         self.path = path
         self.path_index = 0
         self.row, self.col = path[0]
         self.x = float(self.col * TILE_SIZE + TILE_SIZE // 2)
         self.y = float(self.row * TILE_SIZE + TILE_SIZE // 2 + 80)
+        self._pathfind = pathfind_fn if pathfind_fn is not None else _bfs_default
         self.speed = 1.2 + wave * 0.1
         self.hp = 80 + wave * 20
         self.max_hp = self.hp
@@ -28,7 +29,7 @@ class Enemy:
 
     def recalculate_path(self, grid):
         current_node = self.get_current_node()
-        new_path = bfs(grid, current_node, END)
+        new_path = self._pathfind(grid, current_node, END)
         if new_path:
             self.path = new_path
             self.path_index = 0

@@ -16,8 +16,8 @@ def main():
 
     while True:
         result = main_menu(screen, fonts, sounds, images)
-        if result == "start":
-            run_game(screen, fonts, sounds, images)
+        if isinstance(result, tuple) and result[0] == "start":
+            run_game(screen, fonts, sounds, images, algo=result[1])
 
 if __name__ == "__main__":
     try:

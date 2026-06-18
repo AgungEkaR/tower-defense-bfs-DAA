@@ -79,13 +79,15 @@ def draw_grid(surface, grid, path, show_path):
                           ey + TILE_SIZE // 2 - e_text.get_height() // 2))
 
 def draw_header(surface, score, lives, wave,
-                enemies_alive, enemies_to_spawn, spawned, fonts):
+                enemies_alive, enemies_to_spawn, spawned, fonts, algo="bfs"):
     pygame.draw.rect(surface, (30, 30, 30), (0, 0, WIDTH, 80))
     pygame.draw.rect(surface, YELLOW, (0, 0, WIDTH, 80), 2)
-    title = fonts["big"].render("Tower Defense - BFS Pathfinding", True, YELLOW)
+    algo_label = "BFS" if algo == "bfs" else "A*"
+    title = fonts["big"].render(
+        f"Tower Defense  —  {algo_label} Pathfinding", True, YELLOW)
     surface.blit(title, (WIDTH // 2 - title.get_width() // 2, 2))
     inst = fonts["small"].render(
-        "Left Mouse Button: Place tower | Right Mouse Button: Remove | P: Path",
+        "Left: Place tower | Right: Remove | P: Path | R: Restart",
         True, GRAY)
     surface.blit(inst, (WIDTH // 2 - inst.get_width() // 2, 30))
     pygame.draw.rect(surface, (50, 50, 50), (5, 48, 130, 26), border_radius=5)

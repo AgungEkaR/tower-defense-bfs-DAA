@@ -3,6 +3,7 @@ import math
 from settings import *
 from ui import draw_button
 
+
 def main_menu(screen, fonts, sounds, images):
     dragging_slider = False
 
@@ -25,14 +26,14 @@ def main_menu(screen, fonts, sounds, images):
         # Title
         title = fonts["title"].render("TOWER DEFENSE", True, YELLOW)
         subtitle = fonts["medium"].render(
-            "BFS Pathfinding Algorithm", True, GRAY)
+            "BFS  vs  A*  Pathfinding", True, GRAY)
         screen.blit(title,
-                   (WIDTH // 2 - title.get_width() // 2, 80))
+                   (WIDTH // 2 - title.get_width() // 2, 70))
         screen.blit(subtitle,
-                   (WIDTH // 2 - subtitle.get_width() // 2, 140))
+                   (WIDTH // 2 - subtitle.get_width() // 2, 130))
 
         # Enemy preview
-        cx, cy = WIDTH // 2, 230
+        cx, cy = WIDTH // 2, 210
         pygame.draw.circle(screen, DARK_RED, (cx, cy), 30)
         pygame.draw.circle(screen, RED, (cx - 4, cy - 4), 27)
         pygame.draw.circle(screen, BLACK, (cx, cy), 30, 3)
@@ -48,15 +49,15 @@ def main_menu(screen, fonts, sounds, images):
                        (cx - 12, cy + 4, 24, 16),
                        math.pi, 2 * math.pi, 3)
 
-        # Volume
+        # Volume slider
         from settings import master_volume
         vol_label = fonts["medium"].render(
             f"Volume: {int(master_volume * 100)}%", True, WHITE)
         screen.blit(vol_label,
-                   (WIDTH // 2 - vol_label.get_width() // 2, 290))
+                   (WIDTH // 2 - vol_label.get_width() // 2, 265))
 
         slider_x = WIDTH // 2 - 150
-        slider_y = 330
+        slider_y = 305
         slider_w = 300
         slider_h = 12
         pygame.draw.rect(screen, DARK_GRAY,
@@ -72,19 +73,38 @@ def main_menu(screen, fonts, sounds, images):
         pygame.draw.circle(screen, YELLOW,
                           (handle_x, slider_y + slider_h // 2), 12, 2)
 
-        # Buttons
-        btn_start = pygame.Rect(WIDTH // 2 - 100, 380, 200, 55)
-        btn_quit = pygame.Rect(WIDTH // 2 - 100, 455, 200, 55)
-        draw_button(screen, "START GAME", btn_start,
-                   (30, 120, 30), (50, 170, 50), fonts)
+        # Algorithm label
+        algo_label = fonts["normal"].render("Select Pathfinding Algorithm:", True, WHITE)
+        screen.blit(algo_label,
+                   (WIDTH // 2 - algo_label.get_width() // 2, 340))
+
+        # BFS and A* start buttons (side by side)
+        btn_bfs = pygame.Rect(WIDTH // 2 - 210, 375, 190, 55)
+        btn_astar = pygame.Rect(WIDTH // 2 + 20, 375, 190, 55)
+        btn_quit = pygame.Rect(WIDTH // 2 - 100, 448, 200, 48)
+
+        draw_button(screen, "BFS Mode", btn_bfs,
+                   (30, 80, 160), (50, 110, 210), fonts)
+        draw_button(screen, "A* Mode", btn_astar,
+                   (130, 50, 10), (190, 80, 20), fonts)
         draw_button(screen, "QUIT", btn_quit,
                    (150, 30, 30), (200, 50, 50), fonts)
 
+        # Description labels under buttons
+        bfs_desc = fonts["small"].render("O(V+E) · explores all directions", True, (160, 200, 255))
+        astar_desc = fonts["small"].render("O(E log V) · guided by heuristic", True, (255, 200, 120))
+        screen.blit(bfs_desc,
+                   (btn_bfs.x + btn_bfs.w // 2 - bfs_desc.get_width() // 2,
+                    btn_bfs.y + btn_bfs.h + 4))
+        screen.blit(astar_desc,
+                   (btn_astar.x + btn_astar.w // 2 - astar_desc.get_width() // 2,
+                    btn_astar.y + btn_astar.h + 4))
+
         inst = fonts["small"].render(
-            "Left: Place tower | Right: Remove | P: Toggle path",
+            "Left: Place tower | Right: Remove | P: Toggle path | R: Restart",
             True, GRAY)
         screen.blit(inst,
-                   (WIDTH // 2 - inst.get_width() // 2, HEIGHT - 30))
+                   (WIDTH // 2 - inst.get_width() // 2, HEIGHT - 28))
 
         pygame.display.flip()
 
@@ -98,8 +118,10 @@ def main_menu(screen, fonts, sounds, images):
                                          slider_y - 12, 24, 24)
                 if handle_rect.collidepoint(mx, my):
                     dragging_slider = True
-                if btn_start.collidepoint(mx, my):
-                    return "start"
+                if btn_bfs.collidepoint(mx, my):
+                    return ("start", "bfs")
+                if btn_astar.collidepoint(mx, my):
+                    return ("start", "astar")
                 if btn_quit.collidepoint(mx, my):
                     pygame.quit()
                     exit()
